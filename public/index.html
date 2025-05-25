@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vastu Shanti Ceremony - RSVP</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Decorative Border -->
+        <div class="decorative-border">
+            <div class="corner-ornament top-left"></div>
+            <div class="corner-ornament top-right"></div>
+            <div class="corner-ornament bottom-left"></div>
+            <div class="corner-ornament bottom-right"></div>
+        </div>
+
+        <!-- Header Section -->
+        <header class="header">
+            <div class="lotus-symbol">🪷</div>
+            <h1 class="main-title">Vastu Shanti Ceremony</h1>
+            <div class="date-info">
+                <p class="date">6th June, 2025</p>
+                <p class="time">1:00 PM to 4:00 PM</p>
+            </div>
+        </header>
+
+        <!-- Invitation Text -->
+        <section class="invitation-text">
+            <p class="cordial-invite">We cordially invite you with family to Vastu Shanti of our new home</p>
+            <div class="address">
+                <p>3605, CURA, TenX Habitat,</p>
+                <p>Raymond realty, Pokharan</p>
+                <p>Rd Number 1, Phase 1, J K</p>
+                <p>Gram, Thane West</p>
+            </div>
+        </section>
+
+        <!-- RSVP Form -->
+        <section class="rsvp-section">
+            <h2 class="rsvp-title">Please Confirm Your Presence</h2>
+            
+            <form id="rsvpForm" class="rsvp-form">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="attendance">Will you be attending? *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="yes" name="attendance" value="yes" required>
+                            <label for="yes">✓ Yes, I'll be there</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="no" name="attendance" value="no" required>
+                            <label for="no">✗ Sorry, can't make it</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="guestsGroup" style="display: none;">
+                    <label for="guestCount">Number of Guests (including yourself) *</label>
+                    <select id="guestCount" name="guestCount">
+                        <option value="">Select number of guests</option>
+                        <option value="1">1 Person</option>
+                        <option value="2">2 People</option>
+                        <option value="3">3 People</option>
+                        <option value="4">4 People</option>
+                        <option value="5">5 People</option>
+                        <option value="6">6+ People</option>
+                    </select>
+                </div>
+
+                
+                <button type="submit" class="submit-btn">
+                    <span class="btn-text">Confirm RSVP</span>
+                    <div class="btn-loader" style="display: none;">Submitting...</div>
+                </button>
+            </form>
+
+            <div id="successMessage" class="success-message" style="display: none;">
+                <div class="success-icon">✓</div>
+                <h3>Thank You!</h3>
+                <p>Your RSVP has been confirmed. We look forward to celebrating with you!</p>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <div class="error-icon">✗</div>
+                <h3>Error</h3>
+                <p id="errorText">There was an error submitting your RSVP. Please try again.</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="lotus-pattern">
+                <span class="lotus">🪷</span>
+                <span class="lotus">🪷</span>
+                <span class="lotus">🪷</span>
+            </div>
+            <p class="blessing">May this new beginning bring prosperity and happiness</p>
+        </footer>
+    </div>
+
+    <script>
+        // Show/hide guests field based on attendance selection
+document.querySelectorAll('input[name="attendance"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const guestsGroup = document.getElementById('guestsGroup');
+        const guestsSelect = document.getElementById('guestCount');
+        
+        if (this.value === 'yes') {
+            guestsGroup.style.display = 'block';
+            guestsSelect.required = true;
+        } else {
+            guestsGroup.style.display = 'none';
+            guestsSelect.required = false;
+            guestsSelect.value = '';
+        }
+    });
+});
+
+// Form submission handler with better error handling
+document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.querySelector('.submit-btn');
+    const btnText = document.querySelector('.btn-text');
+    const btnLoader = document.querySelector('.btn-loader');
+    const form = document.getElementById('rsvpForm');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    
+    // Hide any previous messages
+    successMessage.style.display = 'none';
+    errorMessage.style.display = 'none';
+    
+    // Show loading state
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    submitBtn.disabled = true;
+    
+    // Get form data
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    
+    // Convert guestCount to number and validate
+    if (data.attendance === 'yes') {
+        if (!data.guestCount) {
+            showError('Please select the number of guests');
+            resetButton();
+            return;
+        }
+        data.guestCount = parseInt(data.guestCount);
+    } else {
+        data.guestCount = 0; // Set to 0 for non-attending
+    }
+    
+    // Validate phone number format
+    const phoneRegex = /^\+?[\d\s\-\(\)]{10,15}$/;
+    if (!phoneRegex.test(data.phone.trim())) {
+        showError('Please enter a valid phone number (10-15 digits)');
+        resetButton();
+        return;
+    }
+    
+    console.log('Sending data:', data);
+    
+    try {
+        // First, test server connectivity
+        const healthResponse = await fetch('/health', {
+            method: 'GET',
+            timeout: 5000
+        });
+        
+        if (!healthResponse.ok) {
+            throw new Error('Server is not responding. Please try again later.');
+        }
+        
+        console.log('Server health check passed');
+        
+        // Submit the RSVP
+        const response = await fetch('/api/rsvp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
+        
+        // Get response text first to handle potential parsing issues
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
+        
+        let result;
+        try {
+            result = responseText ? JSON.parse(responseText) : {};
+        } catch (jsonError) {
+            console.error('JSON parse error:', jsonError);
+            console.error('Response text that failed to parse:', responseText);
+            throw new Error(`Server returned invalid response. Status: ${response.status}. Please check server logs.`);
+        }
+        
+        console.log('Parsed result:', result);
+        
+        if (response.ok) {
+            // Success
+            form.style.display = 'none';
+            successMessage.style.display = 'block';
+            successMessage.scrollIntoView({ behavior: 'smooth' });
+            
+            // Optional: Show additional success info
+            if (result.rsvp) {
+                const successText = successMessage.querySelector('p');
+                if (data.attendance === 'yes') {
+                    successText.textContent = `Thank you, ${result.rsvp.name}! Your RSVP for ${result.rsvp.guestCount} guest(s) has been confirmed. We look forward to celebrating with you!`;
+                } else {
+                    successText.textContent = `Thank you, ${result.rsvp.name}! We've noted that you won't be able to attend. We'll miss you!`;
+                }
+            }
+        } else {
+            // Handle different error types
+            let errorMsg = result.error || `Server error: ${response.status} ${response.statusText}`;
+            
+            if (response.status === 409 && result.duplicate) {
+                // Duplicate phone number
+                errorMsg = result.error || 'RSVP already submitted for this phone number';
+            } else if (response.status === 400 && result.validationErrors) {
+                // Validation errors
+                errorMsg = result.details || 'Please check your input and try again';
+            } else if (response.status === 429) {
+                // Rate limit
+                errorMsg = 'Too many requests. Please wait a moment and try again.';
+            } else if (response.status >= 500) {
+                // Server error
+                errorMsg = 'Server error. Please try again in a few moments.';
+            }
+            
+            throw new Error(errorMsg);
+        }
+    } catch (error) {
+        console.error('Full error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        
+        let errorMsg = 'Sorry, there was an error submitting your RSVP. Please try again.';
+        
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            errorMsg = 'Cannot connect to server. Please check your internet connection and try again.';
+        } else if (error.message.includes('Server is not responding')) {
+            errorMsg = 'Server is temporarily unavailable. Please try again in a few moments.';
+        } else if (error.message.includes('JSON')) {
+            errorMsg = 'Server response error. Please refresh the page and try again.';
+        } else if (error.message.includes('timeout')) {
+            errorMsg = 'Request timed out. Please check your connection and try again.';
+        } else if (error.message) {
+            errorMsg = error.message;
+        }
+        
+        showError(errorMsg);
+    } finally {
+        resetButton();
+    }
+    
+    function showError(message) {
+        errorText.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function resetButton() {
+        btnText.style.display = 'block';
+        btnLoader.style.display = 'none';
+        submitBtn.disabled = false;
+    }
+});
+
+// Add retry button to error message
+document.addEventListener('DOMContentLoaded', function() {
+    const errorMessage = document.getElementById('errorMessage');
+    if (errorMessage && !errorMessage.querySelector('.retry-btn')) {
+        const retryBtn = document.createElement('button');
+        retryBtn.textContent = 'Try Again';
+        retryBtn.className = 'retry-btn';
+        retryBtn.style.cssText = `
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
+        retryBtn.addEventListener('click', function() {
+            errorMessage.style.display = 'none';
+            document.getElementById('rsvpForm').style.display = 'block';
+        });
+        errorMessage.appendChild(retryBtn);
+    }
+});
+
+// Add floating animation to lotus symbols
+document.querySelectorAll('.lotus').forEach((lotus, index) => {
+    lotus.style.animationDelay = `${index * 0.5}s`;
+});
+
+// Add form validation feedback
+document.querySelectorAll('input[required], select[required]').forEach(field => {
+    field.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+            this.style.borderColor = '#ff6b6b';
+        } else {
+            this.style.borderColor = '#4CAF50';
+        }
+    });
+    
+    field.addEventListener('input', function() {
+        if (this.style.borderColor === 'rgb(255, 107, 107)') {
+            this.style.borderColor = '';
+        }
+    });
+});
+
+// Debug function to test server connectivity
+window.testServer = async function() {
+    try {
+        const response = await fetch('/api/test-db');
+        const result = await response.json();
+        console.log('Server test result:', result);
+        alert('Server connection: ' + (result.success ? 'SUCCESS' : 'FAILED'));
+    } catch (error) {
+        console.error('Server test error:', error);
+        alert('Server connection FAILED: ' + error.message);
+    }
+};
+    </script>
+</body>
+</html>
